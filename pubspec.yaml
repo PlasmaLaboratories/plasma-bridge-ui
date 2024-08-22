@@ -32,10 +32,24 @@ dependencies:
   fpdart: ^1.1.0
   fetch_client: ^1.1.2
   http: ^1.2.1 #TODO: Migrate to fetch_client
+  fixnum: ^1.1.0
 
   #Misc
-  uuid: ^4.4.0
+  uuid: ^4.2.1
   crypto: ^3.0.3
+  grpc: ^3.2.4
+
+  # Blockchain
+  brambldart:
+    path: ../BramblDart
+  #  ^2.0.0-beta.0
+  topl_common: ^2.1.0
+  servicekit:
+    path: ../dart_service_kit
+    # git:
+    #   url: https://github.com/Topl/dart_service_kit.git
+    #   ref: beta-0-updates
+  convert: ^3.1.1
 
 dev_dependencies:
   flutter_test:

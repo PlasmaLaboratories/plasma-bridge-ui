@@ -2,10 +2,10 @@ import 'dart:convert';
 
 import 'package:apparatus_wallet/features/peg_in/logic/http_client.dart';
 
-class BridgeApi {
+class BridgeApiInterface {
   final String baseAddress;
 
-  BridgeApi({required this.baseAddress});
+  BridgeApiInterface({required this.baseAddress});
 
   Future<StartSessionResponse> startSession(StartSessionRequest request) async {
     final response = await httpClient.post(
@@ -74,6 +74,10 @@ abstract class MintingStatus {
     switch (data["mintingStatus"]) {
       case "PeginSessionStateWaitingForBTC":
         return MintingStatus_PeginSessionStateWaitingForBTC();
+      case "PeginSessionStateMintingTBTC":
+        return MintingStatus_PeginSessionStateMintingTBTC();
+      case "PeginSessionMintingTBTCConfirmation":
+        return MintingStatus_PeginSessionMintingTBTCConfirmation();
       case "PeginSessionWaitingForRedemption":
         return MintingStatus_PeginSessionWaitingForRedemption.fromJson(data);
       case "PeginSessionWaitingForClaim":
@@ -85,6 +89,10 @@ abstract class MintingStatus {
 }
 
 class MintingStatus_PeginSessionStateWaitingForBTC extends MintingStatus {}
+
+class MintingStatus_PeginSessionStateMintingTBTC extends MintingStatus {}
+
+class MintingStatus_PeginSessionMintingTBTCConfirmation extends MintingStatus {}
 
 class MintingStatus_PeginSessionWaitingForRedemption extends MintingStatus {
   final String address;
