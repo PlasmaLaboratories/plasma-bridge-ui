@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:apparatus_wallet/features/bridge/providers/password_state.dart';
@@ -12,6 +13,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:topl_common/proto/brambl/models/datum.pb.dart';
 import 'package:topl_common/proto/brambl/models/event.pb.dart';
+import 'package:topl_common/proto/brambl/models/transaction/io_transaction.pb.dart';
 import 'package:topl_common/proto/node/services/bifrost_rpc.pbgrpc.dart';
 import 'package:topl_common/proto/quivr/models/proposition.pb.dart';
 import 'package:topl_common/proto/quivr/models/shared.pb.dart';
@@ -25,16 +27,16 @@ part 'peg_in.g.dart';
 class PegIn extends _$PegIn {
   @override
   PegInState build() {
-    ref.watch(walletKeyVaultProvider);
-    return PegInState.base();
+    return const InactivePegInState();
   }
 
   startSession() async {
-    state = state.copyWith(sessionStarted: true);
     final uuid = const Uuid().v4();
     final uuidBytes = utf8.encode(uuid);
     final hashed = sha256.hash(uuidBytes);
     final hashedEncoded = hex.encode(hashed);
+    // Ensure wallet is initialized
+    await ref.watch(walletKeyVaultProvider.future);
     final serviceKit = await ref.read(serviceKitProvider.future);
     final preimage = Preimage(
       input: uuidBytes,
@@ -49,62 +51,78 @@ class PegIn extends _$PegIn {
             // TODO: This should be updated once the bridge supports VK exchange
             "0295bb5a3b80eeccb1e38ab2cbac2545e9af6c7012cdc8d53bd276754c54fc2e4a",
         sha256: hashedEncoded);
-    state = state.copyWith(uuid: uuid, sha256: hashedEncoded);
     try {
       final response = await ref.watch(bridgeApiProvider).startSession(request);
-      state = state.copyWith(
-        sessionID: response.sessionID,
-        escrowAddress: response.escrowAddress,
-      );
+      final active = ActivePegInState(
+          uuid: uuid,
+          sha256: hashedEncoded,
+          sessionID: response.sessionID,
+          escrowAddress: response.escrowAddress,
+          error: null,
+          mintingStatus: MintingStatus_PeginSessionStateWaitingForBTC());
+      state = active;
+      _checkStatus();
     } catch (e) {
-      state = state.copyWith(error: "An error occurred. Lol! $e");
+      state = InactivePegInState(error: "An error occurred. Lol! $e");
     }
   }
 
-  btcDeposited() {
-    state = state.copyWith(btcDeposited: true);
-    final bridgeApi = ref.watch(bridgeApiProvider);
-    final sub = Stream.periodic(const Duration(seconds: 5))
-        .asyncMap((_) => bridgeApi.getMintingStatus(state.sessionID!))
-        .map((status) {
-          if (status == null) throw Exception("Session not found");
-          return status;
-        })
-        .where((status) =>
-            status is MintingStatus_PeginSessionWaitingForRedemption)
-        // Using where + take(1) instead of firstWhere to avoid losing the cancelation benefits of the stream
-        .cast<MintingStatus_PeginSessionWaitingForRedemption>()
-        .take(1)
-        .asyncMap((status) => _prepareTx(status.address, status.redeemScript))
-        .asyncMap((tx) async {
+  _checkStatus() async {
+    final st = state;
+    if (st is! ActivePegInState) return;
+    try {
+      final bridgeApi = ref.watch(bridgeApiProvider);
+      final status = await bridgeApi.getMintingStatus(st.sessionID);
+      if (status == null) {
+        state = st.copyWith(error: "Session not found");
+      } else if (st.mintingStatus == status) {
+        // No change in status, so no need to notify
+        return;
+      } else {
+        if (status is MintingStatus_PeginSessionWaitingForRedemption &&
+            st.redeemTx == null) {
+          final tx = await _prepareTx(state as ActivePegInState, status);
           final nodeClient =
               NodeRpcClient(ref.read(rpcChannelProvider).nodeRpcChannel);
+          state = st.copyWith(redeemTx: tx);
 
           // Finally, broadcast the transaction
           await nodeClient
               .broadcastTransaction(BroadcastTransactionReq(transaction: tx));
-        })
-        .listen((_) {
-          state = state.copyWith(tBtcMinted: true);
-        });
-    sub.onError((e, s) =>
-        state = state.copyWith(error: "An error occurred. Lol! $e\n$s"));
-    ref.onDispose(sub.cancel);
+        } else if (status is MintingStatus_PeginSessionStateSuccessfulPegin ||
+            status is MintingStatus_PeginSessionWaitingForClaim) {
+          return;
+        } else if (status is MintingStatus_PeginSessionStateTimeout) {
+          state =
+              st.copyWith(error: "Session timed out", mintingStatus: status);
+          return;
+        }
+
+        state = st.copyWith(mintingStatus: status);
+        final timer = Timer(const Duration(seconds: 5), _checkStatus);
+        ref.onDispose(timer.cancel);
+      }
+    } catch (e) {
+      state = st.copyWith(error: "An error occurred. Lol! $e");
+    }
   }
 
   tBtcAccepted() {
-    state = PegInState.base();
+    state = const InactivePegInState();
   }
 
-  _prepareTx(String address, String redeemScript) async {
+  // Prepares the transaction to redeem tBTC from the escrow address into the local wallet.
+  // This process also updates the wallet with the necessary template and indices to handle the redemption.
+  Future<IoTransaction> _prepareTx(ActivePegInState state,
+      MintingStatus_PeginSessionWaitingForRedemption status) async {
     final genusClient =
         GenusQueryAlgebra(ref.read(rpcChannelProvider).genusRpcChannel);
     final serviceKit = await ref.read(serviceKitProvider.future);
     final templateStorage = serviceKit.templateStorageApi;
     final templateName = "bridge-${state.sha256}";
     const fellowshipName = "bridge";
-    final redeemAddress = AddressCodecs.decode(address).getOrThrow();
-    final decodedRedeemScript = _decodeRedeemScript(redeemScript);
+    final redeemAddress = AddressCodecs.decode(status.address).getOrThrow();
+    final decodedRedeemScript = _decodeRedeemScript(status.redeemScript);
 
     await templateStorage.addTemplate(WalletTemplate(
         1, templateName, json.encode(decodedRedeemScript.toJson())));
@@ -113,7 +131,10 @@ class PegIn extends _$PegIn {
         .addEntityVks(fellowshipName, templateName, []);
 
     final lockTemplate =
-        serviceKit.walletStateApi.getLockTemplate(templateName)!;
+        serviceKit.walletStateApi.getLockTemplate(templateName);
+    if (lockTemplate == null) {
+      throw Exception("Lock template not found for templateName=$templateName");
+    }
     final lock = lockTemplate.build([]).getOrThrow();
     assert(lock == decodedRedeemScript.build([]).getOrThrow());
     final lockAddress = await serviceKit
@@ -121,7 +142,11 @@ class PegIn extends _$PegIn {
         .lockAddress(lock);
     assert(redeemAddress == lockAddress);
     final indices = serviceKit.walletStateApi
-        .getNextIndicesForFunds(fellowshipName, templateName)!;
+        .getNextIndicesForFunds(fellowshipName, templateName);
+    if (indices == null) {
+      throw Exception(
+          "No indices available for fellowship=$fellowshipName template=$templateName");
+    }
     final password = ref.read(passwordStateProvider);
     final keyPair = serviceKit.walletApi
         .extractMainKey(await ref.read(walletKeyVaultProvider.future),
@@ -191,31 +216,27 @@ class PegIn extends _$PegIn {
   }
 }
 
-@freezed
-class PegInState with _$PegInState {
-  const factory PegInState({
-    required bool sessionStarted,
-    required String? uuid,
-    required String? sha256,
-    required String? sessionID,
-    required String? escrowAddress,
-    required bool btcDeposited,
-    required bool tBtcMinted,
-    required String? error,
-  }) = _PegInState;
+abstract class PegInState {}
 
-  factory PegInState.base() => const PegInState(
-        sessionStarted: false,
-        uuid: null,
-        sha256: null,
-        sessionID: null,
-        escrowAddress: null,
-        btcDeposited: false,
-        tBtcMinted: false,
-        error: null,
-      );
+@freezed
+class InactivePegInState extends PegInState with _$InactivePegInState {
+  const factory InactivePegInState({String? error}) = _InactivePegInState;
 }
 
+@freezed
+class ActivePegInState extends PegInState with _$ActivePegInState {
+  const factory ActivePegInState({
+    required String uuid,
+    required String sha256,
+    required String sessionID,
+    required String escrowAddress,
+    String? error,
+    required MintingStatus mintingStatus,
+    IoTransaction? redeemTx,
+  }) = _ActivePegInState;
+}
+
+// Decodes a very specific type of Brambl CLI-generated redeem script into a PredicateTemplate
 PredicateTemplate _decodeRedeemScript(String encoded) {
   // NOTE: The encoded string contains an erroneous quotation mark at the beginning
   final regex = RegExp(

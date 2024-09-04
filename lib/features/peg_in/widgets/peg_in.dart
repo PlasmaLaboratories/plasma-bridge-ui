@@ -5,6 +5,8 @@ import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
+import '../logic/bridge_api_interface.dart';
+
 /// A scaffolded page which allows a user to begin a new Peg-In session
 class PegInPage extends HookConsumerWidget {
   const PegInPage({super.key});
@@ -22,32 +24,25 @@ class PegInPage extends HookConsumerWidget {
 
   Widget body(BuildContext context, WidgetRef ref) {
     final state = ref.watch(pegInProvider);
-    if (state.error != null) {
-      return errorWidget(state.error!);
-    }
-    if (state.sessionStarted) {
-      if (state.escrowAddress == null || state.sessionID == null) {
-        return const CircularProgressIndicator();
-      } else {
-        if (state.tBtcMinted) {
-          return PegInClaimFundsPage(onAccepted: () {
-            ref.watch(pegInProvider.notifier).tBtcAccepted();
-            context.go(walletRoute);
-          });
-        }
-        if (state.btcDeposited) {
-          return PegInAwaitingFundsStage(sessionID: state.sessionID!);
-        } else {
-          return PegInDepositFundsStage(
-            sessionID: state.sessionID!,
-            escrowAddress: state.escrowAddress!,
-            onDeposit: () => ref.watch(pegInProvider.notifier).btcDeposited(),
-          );
-        }
-      }
+    if (state is InactivePegInState) {
+      return InactivePegInPage(state: state);
+    } else if (state is ActivePegInState) {
+      return ActivePegInPage(state: state);
     } else {
-      return startSessionButton(ref);
+      return const CircularProgressIndicator();
     }
+  }
+}
+
+class InactivePegInPage extends ConsumerWidget {
+  final InactivePegInState state;
+
+  const InactivePegInPage({super.key, required this.state});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    if (state.error != null) return errorWidget(state.error!);
+    return startSessionButton(ref);
   }
 
   Widget startSessionButton(WidgetRef ref) {
@@ -63,17 +58,49 @@ class PegInPage extends HookConsumerWidget {
           fontSize: 14, fontWeight: FontWeight.bold, color: Colors.red));
 }
 
+class ActivePegInPage extends ConsumerWidget {
+  final ActivePegInState state;
+
+  const ActivePegInPage({super.key, required this.state});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    if (state.error != null) return errorWidget(state.error!);
+    if (state.mintingStatus is MintingStatus_PeginSessionWaitingForRedemption) {
+      return PegInClaimFundsPage(onAccepted: () {
+        ref.watch(pegInProvider.notifier).tBtcAccepted();
+        context.go(walletRoute);
+      });
+    } else if (state.mintingStatus
+        is MintingStatus_PeginSessionStateWaitingForBTC) {
+      return PegInDepositFundsStage(
+        escrowAddress: state.escrowAddress,
+      );
+    } else if (state.mintingStatus
+            is MintingStatus_PeginSessionStateMintingTBTC ||
+        state.mintingStatus
+            is MintingStatus_PeginSessionMintingTBTCConfirmation) {
+      return const PegInMintingTBTCStage();
+    } else {
+      return const PegInAwaitingFundsStage();
+    }
+  }
+
+  Widget errorWidget(String message) => Center(
+        child: Text(message,
+            style: const TextStyle(
+                fontSize: 14, fontWeight: FontWeight.bold, color: Colors.red)),
+      );
+}
+
 /// A scaffolded page instructing users where to deposit BTC funds
 class PegInDepositFundsStage extends StatelessWidget {
-  const PegInDepositFundsStage(
-      {super.key,
-      required this.sessionID,
-      required this.escrowAddress,
-      required this.onDeposit});
+  const PegInDepositFundsStage({
+    super.key,
+    required this.escrowAddress,
+  });
 
-  final String sessionID;
   final String escrowAddress;
-  final Function() onDeposit;
 
   @override
   Widget build(BuildContext context) => Center(
@@ -90,11 +117,6 @@ class PegInDepositFundsStage extends StatelessWidget {
                   style: const TextStyle(
                       fontSize: 14, fontWeight: FontWeight.w100)),
             ),
-            TextButton.icon(
-              onPressed: onDeposit,
-              icon: const Icon(Icons.start),
-              label: const Text("Next"),
-            ),
           ],
         ),
       );
@@ -102,15 +124,28 @@ class PegInDepositFundsStage extends StatelessWidget {
 
 /// A scaffolded page which waits for the API to indicate funds have been deposited
 class PegInAwaitingFundsStage extends StatelessWidget {
-  const PegInAwaitingFundsStage({super.key, required this.sessionID});
-
-  final String sessionID;
+  const PegInAwaitingFundsStage({super.key});
 
   @override
   Widget build(BuildContext context) => const Column(
         children: [
           Center(
             child: Text('Please wait while we confirm the BTC transfer.',
+                style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+          ),
+          CircularProgressIndicator(),
+        ],
+      );
+}
+
+class PegInMintingTBTCStage extends StatelessWidget {
+  const PegInMintingTBTCStage({super.key});
+
+  @override
+  Widget build(BuildContext context) => const Column(
+        children: [
+          Center(
+            child: Text('BTC Confirmed. Minting tBTC.',
                 style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
           ),
           CircularProgressIndicator(),

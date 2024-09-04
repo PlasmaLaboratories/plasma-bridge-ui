@@ -72,27 +72,37 @@ abstract class MintingStatus {
   static MintingStatus fromJson(data) {
     ArgumentError.checkNotNull(data["mintingStatus"]);
     switch (data["mintingStatus"]) {
+      case "PeginSessionStateSuccessfulPegin":
+        return MintingStatus_PeginSessionStateSuccessfulPegin();
+      case "PeginSessionStateTimeout":
+        return MintingStatus_PeginSessionStateTimeout();
       case "PeginSessionStateWaitingForBTC":
         return MintingStatus_PeginSessionStateWaitingForBTC();
       case "PeginSessionStateMintingTBTC":
         return MintingStatus_PeginSessionStateMintingTBTC();
-      case "PeginSessionMintingTBTCConfirmation":
-        return MintingStatus_PeginSessionMintingTBTCConfirmation();
       case "PeginSessionWaitingForRedemption":
         return MintingStatus_PeginSessionWaitingForRedemption.fromJson(data);
       case "PeginSessionWaitingForClaim":
         return MintingStatus_PeginSessionWaitingForClaim();
+      case "PeginSessionMintingTBTCConfirmation":
+        return MintingStatus_PeginSessionMintingTBTCConfirmation();
+      case "PeginSessionWaitingForEscrowBTCConfirmation":
+        return MintingStatus_PeginSessionWaitingForEscrowBTCConfirmation();
+      case "PeginSessionPeginSessionWaitingForClaimBTCConfirmation":
+        return MintingStatus_PeginSessionPeginSessionWaitingForClaimBTCConfirmation();
       default:
         throw ArgumentError.value(data["mintingStatus"]);
     }
   }
 }
 
+class MintingStatus_PeginSessionStateSuccessfulPegin extends MintingStatus {}
+
+class MintingStatus_PeginSessionStateTimeout extends MintingStatus {}
+
 class MintingStatus_PeginSessionStateWaitingForBTC extends MintingStatus {}
 
 class MintingStatus_PeginSessionStateMintingTBTC extends MintingStatus {}
-
-class MintingStatus_PeginSessionMintingTBTCConfirmation extends MintingStatus {}
 
 class MintingStatus_PeginSessionWaitingForRedemption extends MintingStatus {
   final String address;
@@ -109,3 +119,9 @@ class MintingStatus_PeginSessionWaitingForRedemption extends MintingStatus {
 }
 
 class MintingStatus_PeginSessionWaitingForClaim extends MintingStatus {}
+
+class MintingStatus_PeginSessionMintingTBTCConfirmation extends MintingStatus {}
+
+class MintingStatus_PeginSessionWaitingForEscrowBTCConfirmation extends MintingStatus {}
+
+class MintingStatus_PeginSessionPeginSessionWaitingForClaimBTCConfirmation extends MintingStatus {}
