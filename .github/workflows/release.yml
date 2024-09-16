@@ -20,4 +20,4 @@ jobs:
     needs: [build]
     secrets: inherit
     with:
-      remote-docker-image: "ghcr.io/topl/bridge-ui"
+      remote-docker-image: "ghcr.io/stratalab/strata-bridge-ui"

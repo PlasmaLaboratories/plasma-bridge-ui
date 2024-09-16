@@ -4,8 +4,8 @@ on:
   workflow_call:
     inputs:
       remote-docker-image:
-        description: 'Remote Docker image. ex: ghcr.io/topl/bridge-ui'
-        default: "ghcr.io/topl/bridge-ui"
+        description: 'Remote Docker image. ex: ghcr.io/stratalab/strata-bridge-ui'
+        default: "ghcr.io/stratalab/strata-bridge-ui"
         required: false
         type: string
 
