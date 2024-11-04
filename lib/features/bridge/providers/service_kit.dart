@@ -1,11 +1,10 @@
-import 'package:apparatus_wallet/features/bridge/providers/rpc_channel.dart';
-import 'package:brambldart/brambldart.dart';
+import 'package:plasma_wallet/features/bridge/providers/rpc_channel.dart';
+import 'package:plasma_sdk/plasma_sdk.dart';
 import 'package:flutter/foundation.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:servicekit/api/template_storage_api.dart';
-import 'package:servicekit/servicekit.dart';
-import 'package:servicekit/toolkit/features/wallet/wallet_management_utils.dart';
+import 'package:plasma_service_kit/plasma_service_kit.dart';
+import 'package:plasma_service_kit/toolkit/features/wallet/wallet_management_utils.dart';
 
 part 'service_kit.freezed.dart';
 
@@ -42,13 +41,13 @@ class ServiceKitState with _$ServiceKitState {
     // TODO: Don't hardcode
     const transactionBuilderApi = TransactionBuilderApi(
         NetworkConstants.privateNetworkId, NetworkConstants.mainLedgerId);
-    final genusQueryAlgebra = GenusQueryAlgebra(channels.genusRpcChannel);
+    final indexQueryAlgebra = IndexerQueryAlgebra(channels.genusRpcChannel);
     final walletManagementUtils =
         WalletManagementUtils(walletApi: wallet, dataApi: wallet.walletKeyApi);
     final simpleTransactionAlgebra = SimpleTransactionAlgebra(
         walletApi: wallet,
         walletStateApi: walletState,
-        utxoAlgebra: genusQueryAlgebra,
+        utxoAlgebra: indexQueryAlgebra,
         transactionBuilderApi: transactionBuilderApi,
         walletManagementUtils: walletManagementUtils);
     return ServiceKitState(

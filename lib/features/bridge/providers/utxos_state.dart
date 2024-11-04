@@ -1,12 +1,9 @@
-import 'package:apparatus_wallet/features/bridge/providers/rpc_channel.dart';
-import 'package:apparatus_wallet/features/bridge/providers/service_kit.dart';
-import 'package:apparatus_wallet/features/bridge/providers/wallet_key_vault.dart';
-import 'package:brambldart/brambldart.dart';
+import 'package:plasma_wallet/features/bridge/providers/rpc_channel.dart';
+import 'package:plasma_wallet/features/bridge/providers/service_kit.dart';
+import 'package:plasma_wallet/features/bridge/providers/wallet_key_vault.dart';
+import 'package:plasma_sdk/plasma_sdk.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:topl_common/proto/brambl/models/address.pb.dart';
-import 'package:topl_common/proto/genus/genus_models.pb.dart';
-import 'package:topl_common/proto/genus/genus_rpc.pbgrpc.dart';
-import 'package:topl_common/proto/node/services/bifrost_rpc.pbgrpc.dart';
+import 'package:plasma_protobuf/plasma_protobuf.dart';
 
 part 'utxos_state.g.dart';
 

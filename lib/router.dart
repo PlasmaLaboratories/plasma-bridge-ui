@@ -1,8 +1,8 @@
-import 'package:apparatus_wallet/features/bridge/widgets/utxos_view.dart';
+import 'package:plasma_wallet/features/bridge/widgets/utxos_view.dart';
 import 'package:flutter/foundation.dart';
 import 'package:go_router/go_router.dart';
-import 'package:apparatus_wallet/features/bridge/bridge_ui.dart';
-import 'package:apparatus_wallet/features/peg_in/widgets/peg_in.dart';
+import 'package:plasma_wallet/features/bridge/bridge_ui.dart';
+import 'package:plasma_wallet/features/peg_in/widgets/peg_in.dart';
 
 /// const routes # TODO move to own file once we get more routes
 const homeRoute = '/';

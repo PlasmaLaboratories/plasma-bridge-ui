@@ -1,4 +1,4 @@
-import 'package:apparatus_wallet/features/peg_in/logic/bridge_api_interface.dart';
+import 'package:plasma_wallet/features/peg_in/logic/bridge_api_interface.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'bridge_api.g.dart';

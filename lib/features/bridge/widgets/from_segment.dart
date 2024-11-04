@@ -5,10 +5,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:apparatus_wallet/constants/strings.dart';
-import 'package:apparatus_wallet/features/bridge/providers/bridge_state.dart';
-import 'package:apparatus_wallet/utils/ui_utils.dart';
-import 'package:apparatus_wallet/utils/utils.dart';
+import 'package:plasma_wallet/constants/strings.dart';
+import 'package:plasma_wallet/features/bridge/providers/bridge_state.dart';
+import 'package:plasma_wallet/utils/ui_utils.dart';
+import 'package:plasma_wallet/utils/utils.dart';
 
 class FromSegment extends HookConsumerWidget {
   const FromSegment({super.key});
@@ -51,7 +51,8 @@ class FromSegment extends HookConsumerWidget {
         // update tooltip
       });
 
-      final fetchTimer = Timer.periodic(const Duration(seconds: 15), (Timer t) => updateTooltip());
+      final fetchTimer = Timer.periodic(
+          const Duration(seconds: 15), (Timer t) => updateTooltip());
 
       // Return a cleanup function to cancel the timer when the widget is unmounted
       return () {
@@ -71,7 +72,10 @@ class FromSegment extends HookConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(Strings.deposit,
-                style: TextStyle(color: Colors.white, fontSize: textL, fontWeight: FontWeight.bold)),
+                style: TextStyle(
+                    color: Colors.white,
+                    fontSize: textL,
+                    fontWeight: FontWeight.bold)),
             Container(
               color: a2,
               child: Row(
@@ -90,11 +94,19 @@ class FromSegment extends HookConsumerWidget {
                             focusColor: Colors.transparent,
                             hoverColor: Colors.transparent,
                             hintText: '0',
-                            hintStyle: TextStyle(color: Colors.grey, fontSize: 48, fontWeight: FontWeight.bold)),
-                        style: const TextStyle(color: Colors.white, fontSize: 48, fontWeight: FontWeight.bold),
-                        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                            hintStyle: TextStyle(
+                                color: Colors.grey,
+                                fontSize: 48,
+                                fontWeight: FontWeight.bold)),
+                        style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 48,
+                            fontWeight: FontWeight.bold),
+                        keyboardType: const TextInputType.numberWithOptions(
+                            decimal: true),
                         inputFormatters: <TextInputFormatter>[
-                          FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
+                          FilteringTextInputFormatter.allow(
+                              RegExp(r'^\d*\.?\d*')),
                         ],
                         onChanged: (value) {
                           if (value.isEmpty) {
@@ -110,8 +122,14 @@ class FromSegment extends HookConsumerWidget {
                     ),
                   ),
                   horizontalSpacerM,
-                  Text(bridgeApi.currency == Currency.ethereum ? Strings.eth : Strings.btc,
-                      style: const TextStyle(color: Colors.white, fontSize: textL, fontWeight: FontWeight.bold)),
+                  Text(
+                      bridgeApi.currency == Currency.ethereum
+                          ? Strings.eth
+                          : Strings.btc,
+                      style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: textL,
+                          fontWeight: FontWeight.bold)),
                 ],
               ),
             ),
@@ -122,9 +140,14 @@ class FromSegment extends HookConsumerWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text("≈ \$${notifier.convertedValue}",
-                        style: const TextStyle(color: Colors.white54, fontSize: textM, fontWeight: FontWeight.bold)),
+                        style: const TextStyle(
+                            color: Colors.white54,
+                            fontSize: textM,
+                            fontWeight: FontWeight.bold)),
                     horizontalSpacerM,
-                    !fetchedRates.value ? const Icon(Icons.warning, color: Colors.red) : const SizedBox(),
+                    !fetchedRates.value
+                        ? const Icon(Icons.warning, color: Colors.red)
+                        : const SizedBox(),
                   ]),
             )
           ],

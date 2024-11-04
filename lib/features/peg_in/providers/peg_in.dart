@@ -1,22 +1,17 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:apparatus_wallet/features/bridge/providers/password_state.dart';
-import 'package:apparatus_wallet/features/bridge/providers/rpc_channel.dart';
-import 'package:apparatus_wallet/features/bridge/providers/service_kit.dart';
-import 'package:apparatus_wallet/features/bridge/providers/wallet_key_vault.dart';
-import 'package:apparatus_wallet/features/peg_in/logic/bridge_api_interface.dart';
-import 'package:apparatus_wallet/features/peg_in/providers/bridge_api.dart';
-import 'package:brambldart/brambldart.dart';
+import 'package:plasma_wallet/features/bridge/providers/password_state.dart';
+import 'package:plasma_wallet/features/bridge/providers/rpc_channel.dart';
+import 'package:plasma_wallet/features/bridge/providers/service_kit.dart';
+import 'package:plasma_wallet/features/bridge/providers/wallet_key_vault.dart';
+import 'package:plasma_wallet/features/peg_in/logic/bridge_api_interface.dart';
+import 'package:plasma_wallet/features/peg_in/providers/bridge_api.dart';
+import 'package:plasma_sdk/plasma_sdk.dart';
 import 'package:fixnum/fixnum.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:topl_common/proto/brambl/models/datum.pb.dart';
-import 'package:topl_common/proto/brambl/models/event.pb.dart';
-import 'package:topl_common/proto/brambl/models/transaction/io_transaction.pb.dart';
-import 'package:topl_common/proto/node/services/bifrost_rpc.pbgrpc.dart';
-import 'package:topl_common/proto/quivr/models/proposition.pb.dart';
-import 'package:topl_common/proto/quivr/models/shared.pb.dart';
+import 'package:plasma_protobuf/plasma_protobuf.dart';
 import 'package:uuid/uuid.dart';
 import 'package:convert/convert.dart' show hex;
 
@@ -115,8 +110,8 @@ class PegIn extends _$PegIn {
   // This process also updates the wallet with the necessary template and indices to handle the redemption.
   Future<IoTransaction> _prepareTx(ActivePegInState state,
       MintingStatus_PeginSessionWaitingForRedemption status) async {
-    final genusClient =
-        GenusQueryAlgebra(ref.read(rpcChannelProvider).genusRpcChannel);
+    final indexerClient =
+        IndexerQueryAlgebra(ref.read(rpcChannelProvider).genusRpcChannel);
     final serviceKit = await ref.read(serviceKitProvider.future);
     final templateStorage = serviceKit.templateStorageApi;
     final templateName = "bridge-${state.sha256}";
@@ -148,10 +143,9 @@ class PegIn extends _$PegIn {
           "No indices available for fellowship=$fellowshipName template=$templateName");
     }
     final password = ref.read(passwordStateProvider);
-    final keyPair = serviceKit.walletApi
-        .extractMainKey(await ref.read(walletKeyVaultProvider.future),
-            password.toUtf8Uint8List())
-        .getOrThrow();
+    final keyPair = serviceKit.walletApi.extractMainKey(
+        await ref.read(walletKeyVaultProvider.future),
+        password.toUtf8Uint8List());
     final deriveChildKey =
         serviceKit.walletApi.deriveChildKeys(keyPair, indices);
     await serviceKit.walletStateApi.updateWalletState(
@@ -162,7 +156,8 @@ class PegIn extends _$PegIn {
         indices);
 
     // Fetch the UTxOs associated with the redeem address
-    final redeemUtxos = await genusClient.queryUtxo(fromAddress: redeemAddress);
+    final redeemUtxos =
+        await indexerClient.queryUtxo(fromAddress: redeemAddress);
     // Expect only one UTxO to be associated with the redeem address (since _we_ came up with the unique sha256/UUID)
     final redeemUtxo = redeemUtxos.first;
     // Expect the UTxO to contain an asset value

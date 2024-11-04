@@ -1,8 +1,8 @@
-name: apparatus_wallet
-description: "Interact with the Apparatus blockchain and bridge."
+name: plasma_wallet
+description: "Interact with the Plasma blockchain and bridge."
 publish_to: 'none'
 
-version: 1.0.0-beta.0+1
+version: 0.1.0
 
 environment:
   sdk: '>=3.3.4 <4.0.0'
@@ -37,18 +37,12 @@ dependencies:
   #Misc
   uuid: ^4.2.1
   crypto: ^3.0.3
-  grpc: ^3.2.4
+  grpc: ^4.0.1
 
   # Blockchain
-  brambldart:
-    path: ../BramblDart
-  #  ^2.0.0-beta.0
-  topl_common: ^2.1.0
-  servicekit:
-    path: ../dart_service_kit
-    # git:
-    #   url: https://github.com/Topl/dart_service_kit.git
-    #   ref: beta-0-updates
+  plasma_protobuf: ^0.1.0
+  plasma_sdk: ^0.0.0
+  plasma_service_kit: ^0.0.0
   convert: ^3.1.1
 
 dev_dependencies:

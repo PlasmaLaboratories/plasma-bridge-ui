@@ -1,18 +1,12 @@
-import 'package:apparatus_wallet/features/bridge/providers/utxos_state.dart';
-import 'package:apparatus_wallet/router.dart';
-import 'package:brambldart/brambldart.dart';
+import 'package:plasma_wallet/features/bridge/providers/utxos_state.dart';
+import 'package:plasma_wallet/router.dart';
+import 'package:plasma_sdk/plasma_sdk.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fpdart/fpdart.dart' hide State;
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:topl_common/proto/brambl/models/address.pb.dart';
-import 'package:topl_common/proto/brambl/models/box/value.pb.dart';
-import 'package:topl_common/proto/brambl/models/transaction/io_transaction.pb.dart';
-import 'package:topl_common/proto/brambl/models/transaction/spent_transaction_output.pb.dart';
-import 'package:topl_common/proto/brambl/models/transaction/unspent_transaction_output.pb.dart';
-import 'package:topl_common/proto/genus/genus_models.pb.dart';
-import 'package:topl_common/proto/quivr/models/shared.pb.dart';
+import 'package:plasma_protobuf/plasma_protobuf.dart';
 
 class UtxosView extends HookConsumerWidget {
   const UtxosView({super.key});

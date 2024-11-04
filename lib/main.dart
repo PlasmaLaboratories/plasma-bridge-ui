@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:apparatus_wallet/constants/themes.dart';
-import 'package:apparatus_wallet/router.dart';
+import 'package:plasma_wallet/constants/themes.dart';
+import 'package:plasma_wallet/router.dart';
 
 import 'constants/strings.dart';
 

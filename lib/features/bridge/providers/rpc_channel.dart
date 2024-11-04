@@ -1,4 +1,4 @@
-import 'package:brambldart/brambldart.dart';
+import 'package:plasma_sdk/plasma_sdk.dart';
 import 'package:grpc/grpc_connection_interface.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 

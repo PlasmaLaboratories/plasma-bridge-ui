@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:apparatus_wallet/features/peg_in/logic/http_client.dart';
+import 'package:plasma_wallet/features/peg_in/logic/http_client.dart';
 
 class BridgeApiInterface {
   final String baseAddress;
@@ -122,6 +122,8 @@ class MintingStatus_PeginSessionWaitingForClaim extends MintingStatus {}
 
 class MintingStatus_PeginSessionMintingTBTCConfirmation extends MintingStatus {}
 
-class MintingStatus_PeginSessionWaitingForEscrowBTCConfirmation extends MintingStatus {}
+class MintingStatus_PeginSessionWaitingForEscrowBTCConfirmation
+    extends MintingStatus {}
 
-class MintingStatus_PeginSessionPeginSessionWaitingForClaimBTCConfirmation extends MintingStatus {}
+class MintingStatus_PeginSessionPeginSessionWaitingForClaimBTCConfirmation
+    extends MintingStatus {}
