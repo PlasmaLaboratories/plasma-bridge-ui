@@ -19,7 +19,7 @@ RUN mkdir -p /app/wallet && chown -R demiourgos728:root /app && chmod -R 775 /ap
 USER 1001:0
 
 RUN cs setup --yes
-RUN cs fetch -r https://s01.oss.sonatype.org/content/repositories/releases co.topl:brambl-cli_2.13:2.0.0-beta5
+RUN cs fetch -r https://s01.oss.sonatype.org/content/repositories/releases org.plasmalabs:plasma-cli_2.13:0.1.0
 
 COPY extract_group_series_id.sh /extract_group_series_id.sh
 

@@ -19,7 +19,7 @@ class BridgeApiInterface {
 
   Future<MintingStatus?> getMintingStatus(String sessionID) async {
     final response = await httpClient.post(
-        Uri.parse("$baseAddress/api/topl-minting-status"),
+        Uri.parse("$baseAddress/api/plasma-minting-status"),
         body: utf8.encode(json.encode({"sessionID": sessionID})),
         headers: {'Content-Type': 'application/json'}..addAll(corsHeaders));
     if (response.statusCode == 404) return null;

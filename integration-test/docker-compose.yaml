@@ -1,10 +1,10 @@
 services:
-  bifrost:
-    image: toplprotocol/bifrost-node:dev
+  plasmanode:
+    image: stratalab/plasma-node:dev
     ports:
       - "9084:9084"
   bitcoin:
-    image: toplprotocol/bitcoin-zmq:v25-regtest
+    image: stratalab/bitcoin-zmq:v25-regtest
     ports:
       - "18444:18444"
       - "18443:18443"
@@ -14,7 +14,7 @@ services:
       context: bridge-consensus
       dockerfile: bridge-consensus.Dockerfile
     depends_on:
-      bifrost:
+      plasmanode:
         condition: service_started
       bitcoin:
         condition: service_started
@@ -27,14 +27,14 @@ services:
       - ./bridge-consensus/bridge_custom_launch.sh:/bridge_custom_launch.sh
       - ./bridge-consensus/application.conf:/application.conf
   bridgepublicapi:
-    image: docker.io/toplprotocol/topl-btc-bridge-public-api:latest
+    image: ghcr.io/plasmalaboratories/plasma-btc-bridge-public-api:latest
     command:
       - "--config-file"
       - "/application.conf"
     ports:
       - "5000:5000"
     depends_on:
-      bifrost:
+      plasmanode:
         condition: service_started
       bitcoin:
         condition: service_started
@@ -50,7 +50,7 @@ services:
     ports:
       - "9094:9094"
     links:
-      - bifrost
+      - plasmanode
     volumes:
       - ./envoy/config.yaml:/etc/envoy/config.yaml
   bridge_init:
@@ -61,7 +61,7 @@ services:
       - wallet:/app/wallet
       - ./init/bridge_init.sh:/bridge_init.sh
     depends_on:
-      - bifrost
+      - plasmanode
 
 volumes:
   wallet:
