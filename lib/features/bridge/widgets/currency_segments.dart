@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:apparatus_wallet/constants/assets.dart';
-import 'package:apparatus_wallet/constants/strings.dart';
-import 'package:apparatus_wallet/utils/ui_utils.dart';
-
+import 'package:plasma_wallet/constants/assets.dart';
+import 'package:plasma_wallet/constants/strings.dart';
+import 'package:plasma_wallet/utils/ui_utils.dart';
 
 final ethSegment = Row(
   children: [

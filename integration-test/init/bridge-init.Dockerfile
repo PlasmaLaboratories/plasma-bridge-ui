@@ -1,7 +1,7 @@
 FROM eclipse-temurin:11-jdk
 
 RUN apt update \
-    && apt install --no-install-recommends -y curl gzip wget \
+    && apt install --no-install-recommends -y curl gzip wget openssl \
     && apt-get clean
 
 RUN mkdir /bitcoin && wget -qO- https://bitcoin.org/bin/bitcoin-core-27.0/bitcoin-27.0-x86_64-linux-gnu.tar.gz | tar xvz -C /bitcoin && install -m 0755 -o root -g root -t /usr/local/bin /bitcoin/bitcoin-27.0/bin/*
@@ -19,9 +19,9 @@ RUN mkdir -p /app/wallet && chown -R demiourgos728:root /app && chmod -R 775 /ap
 USER 1001:0
 
 RUN cs setup --yes
-RUN cs fetch -r https://s01.oss.sonatype.org/content/repositories/releases co.topl:brambl-cli_2.13:2.0.0-beta5
+RUN cs fetch -r https://s01.oss.sonatype.org/content/repositories/releases org.plasmalabs:plasma-cli_2.13:0.1.0
 
-COPY bridge_init.sh /bridge_init.sh
+COPY extract_group_series_id.sh /extract_group_series_id.sh
 
 ENTRYPOINT ["sh", "/bridge_init.sh"]
 CMD []

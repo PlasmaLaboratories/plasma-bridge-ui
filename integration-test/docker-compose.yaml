@@ -1,35 +1,20 @@
 services:
-  bifrost:
-    image: toplprotocol/bifrost-node:dev
+  plasmanode:
+    image: stratalab/plasma-node:dev
     ports:
       - "9084:9084"
   bitcoin:
-    image: toplprotocol/bitcoin-zmq:v25-regtest
+    image: stratalab/bitcoin-zmq:v25-regtest
     ports:
       - "18444:18444"
       - "18443:18443"
       - "28332:28332"
-  bridge:
-    image: toplprotocol/topl-btc-bridge:latest
-    command:
-      - "--topl-host"
-      - "bifrost"
-      - "--btc-url"
-      - "http://bitcoin"
-      - "--zmq-host"
-      - "bitcoin"
-      - "--topl-wallet-seed-file"
-      - "/app/wallet/topl-wallet.json"
-      - "--topl-wallet-db"
-      - "/app/wallet/topl-wallet.db"
-      - "--btc-peg-in-seed-file"
-      - "/app/btc-wallet/peg-in-wallet.json"
-      - "--btc-wallet-seed-file"
-      - "/app/btc-wallet/btc-wallet.json"
-    ports:
-      - "4000:4000"
+  bridgeconsensus:
+    build:
+      context: bridge-consensus
+      dockerfile: bridge-consensus.Dockerfile
     depends_on:
-      bifrost:
+      plasmanode:
         condition: service_started
       bitcoin:
         condition: service_started
@@ -39,14 +24,44 @@ services:
       - wallet:/app/wallet
       - ./peg-in-wallet.json:/app/btc-wallet/peg-in-wallet.json
       - ./btc-wallet.json:/app/btc-wallet/btc-wallet.json
+      - ./bridge-consensus/bridge_custom_launch.sh:/bridge_custom_launch.sh
+      - ./bridge-consensus/application.conf:/application.conf
+  bridgepublicapi:
+    image: ghcr.io/plasmalaboratories/plasma-btc-bridge-public-api:latest
+    command:
+      - "--config-file"
+      - "/application.conf"
+    ports:
+      - "5000:5000"
+    depends_on:
+      plasmanode:
+        condition: service_started
+      bitcoin:
+        condition: service_started
+      bridge_init:
+        condition: service_completed_successfully
+    volumes:
+      - wallet:/app/wallet
+      - ./bridge-public-api/application.conf:/application.conf
+  envoy:
+    build:
+      context: envoy
+      dockerfile: envoy.Dockerfile
+    ports:
+      - "9094:9094"
+    links:
+      - plasmanode
+    volumes:
+      - ./envoy/config.yaml:/etc/envoy/config.yaml
   bridge_init:
     build:
-      context: .
+      context: init
       dockerfile: bridge-init.Dockerfile
     volumes:
       - wallet:/app/wallet
+      - ./init/bridge_init.sh:/bridge_init.sh
     depends_on:
-      - bifrost
+      - plasmanode
 
 volumes:
   wallet:

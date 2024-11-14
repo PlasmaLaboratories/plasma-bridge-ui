@@ -1,8 +1,8 @@
-name: apparatus_wallet
-description: "Interact with the Apparatus blockchain and bridge."
+name: plasma_wallet
+description: "Interact with the Plasma blockchain and bridge."
 publish_to: 'none'
 
-version: 1.0.0-beta.0+1
+version: 0.1.0
 
 environment:
   sdk: '>=3.3.4 <4.0.0'
@@ -32,10 +32,18 @@ dependencies:
   fpdart: ^1.1.0
   fetch_client: ^1.1.2
   http: ^1.2.1 #TODO: Migrate to fetch_client
+  fixnum: ^1.1.0
 
   #Misc
-  uuid: ^4.4.0
+  uuid: ^4.2.1
   crypto: ^3.0.3
+  grpc: ^4.0.1
+
+  # Blockchain
+  plasma_protobuf: ^0.1.0
+  plasma_sdk: ^0.0.0
+  plasma_service_kit: ^0.0.0
+  convert: ^3.1.1
 
 dev_dependencies:
   flutter_test:

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:apparatus_wallet/features/bridge/widgets/currency_segments.dart';
-import 'package:apparatus_wallet/features/bridge/widgets/currency_selector.dart';
+import 'package:plasma_wallet/features/bridge/widgets/currency_segments.dart';
+import 'package:plasma_wallet/features/bridge/widgets/currency_selector.dart';
 
 class NetworkView extends StatefulWidget {
   const NetworkView({super.key});

@@ -1,17 +1,13 @@
+import 'package:plasma_wallet/features/bridge/widgets/utxos_view.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart';
-import 'package:apparatus_wallet/features/bridge/bridge_ui.dart';
-import 'package:apparatus_wallet/features/peg_in/logic/bridge_api.dart';
-import 'package:apparatus_wallet/features/peg_in/widgets/peg_in.dart';
+import 'package:plasma_wallet/features/bridge/bridge_ui.dart';
+import 'package:plasma_wallet/features/peg_in/widgets/peg_in.dart';
 
 /// const routes # TODO move to own file once we get more routes
 const homeRoute = '/';
 const swapRoute = '/swap';
-
-final providedNavigator =
-    GlobalKey<NavigatorState>(); //TODO: remove with provider refactor
+const walletRoute = '/wallet';
 
 // GoRouter configuration
 final router = GoRouter(
@@ -21,17 +17,15 @@ final router = GoRouter(
   routes: [
     GoRoute(
       path: homeRoute,
-      builder: (context, state) => Provider(
-          create: (context) => BridgeApi(baseAddress: "http://localhost:4000"),
-          child: Navigator(
-              key: providedNavigator,
-              onGenerateRoute: (settings) => MaterialPageRoute(
-                  builder: (context) => const PegInPage(),
-                  settings: settings))),
+      builder: (context, state) => const PegInPage(),
     ),
     GoRoute(
       path: swapRoute,
       builder: (context, state) => const BridgeUi(),
+    ),
+    GoRoute(
+      path: walletRoute,
+      builder: (context, state) => const UtxosView(),
     ),
   ],
 );

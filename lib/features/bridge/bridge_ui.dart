@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:apparatus_wallet/constants/assets.dart';
-import 'package:apparatus_wallet/features/bridge/providers/bridge_state.dart';
-import 'package:apparatus_wallet/features/bridge/widgets/bridge_button.dart';
-import 'package:apparatus_wallet/features/bridge/widgets/deposit_withdraw_selector.dart';
-import 'package:apparatus_wallet/features/bridge/widgets/from_segment.dart';
-import 'package:apparatus_wallet/features/bridge/widgets/info_segment.dart';
-import 'package:apparatus_wallet/features/bridge/widgets/network_view.dart';
-import 'package:apparatus_wallet/utils/ui_utils.dart';
+import 'package:plasma_wallet/constants/assets.dart';
+import 'package:plasma_wallet/features/bridge/providers/bridge_state.dart';
+import 'package:plasma_wallet/features/bridge/widgets/bridge_button.dart';
+import 'package:plasma_wallet/features/bridge/widgets/deposit_withdraw_selector.dart';
+import 'package:plasma_wallet/features/bridge/widgets/from_segment.dart';
+import 'package:plasma_wallet/features/bridge/widgets/info_segment.dart';
+import 'package:plasma_wallet/features/bridge/widgets/network_view.dart';
+import 'package:plasma_wallet/utils/ui_utils.dart';
 
 class BridgeUi extends ConsumerWidget {
   const BridgeUi({super.key});
